@@ -46,7 +46,7 @@ def fill_color(ws, int_):
 
 def write_frames(list_, list_2, str_, dict_):
     for i in range(len(list_)):
-        wb = load_workbook(path + r'\sheets.xlsx')
+        wb = load_workbook(path + '/' + file_name)
         ws = wb[str(list_[i])]
         font = Font(u'宋体', size=11, bold=True, italic=False, strike=False, color='000000')
         ws.cell(row=1, column=1, value=str_ + '-' + list_2[i]).font = font
@@ -72,7 +72,7 @@ def write_details(list_, list_2):
         df_t = df_structure[df_structure['机架编号'] == list_2[i]]
         df_t['from'] = df_t.apply(lambda x: int(x['端口'].split('-')[0]), axis=1)
         df_t['to'] = df_t.apply(lambda x: int(x['端口'].split('-')[1]), axis=1)
-        wb = load_workbook(path + r'\sheets.xlsx')
+        wb = load_workbook(path + '/' + file_name)
         ws = wb[str(list_[i])]
         row_number = 2
         if len(df_t) == 1:
@@ -124,8 +124,8 @@ if __name__ == '__main__':
     path = os.getcwd()
     df_structure = pd.read_excel(path + r'\structure.xlsx')
     df_structure = df_structure.astype(str)
-    file_name = 'sheets.xlsx'
     room_name = df_structure.columns[-1]
+    file_name = room_name + '端口占用表.xlsx'
     list_rack = list({}.fromkeys(df_structure['机架编号'].to_list()).keys())
     list_rack_name = [item + '端截面图' for item in list_rack]
     dict_areas = calculate_areas(list_rack)
