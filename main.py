@@ -3,7 +3,7 @@ import os
 import warnings
 from openpyxl import Workbook
 from openpyxl import load_workbook
-from openpyxl.styles import Font, Color, colors, Border, Side, Alignment, PatternFill
+from openpyxl.styles import Font, Border, Side, Alignment, PatternFill
 
 
 def calculate_areas_fun1(str_):
@@ -26,7 +26,7 @@ def generate_sheets(list_):
     ws.title = str(list_[0])
     for i in list_[1:]:
         wb.create_sheet(str(i))
-    wb.save('sheets.xlsx')
+    wb.save(file_name)
 
 
 def draw_border(ws, int_):
@@ -64,7 +64,7 @@ def write_frames(list_, list_2, str_, dict_):
             ws[str_3].alignment = Alignment(horizontal='center', vertical='center')
             ws[str_4].alignment = Alignment(horizontal='left', vertical='center')
             fill_color(ws, j)
-        wb.save('sheets.xlsx')
+        wb.save(file_name)
 
 
 def write_details(list_, list_2):
@@ -84,7 +84,18 @@ def write_details(list_, list_2):
                 series_ = df_t.iloc[j, :]
                 n = write_details_fun1(ws, series_, row_number)
                 row_number = n
-        wb.save('sheets.xlsx')
+        wb.save(file_name)
+
+
+def prune(str_):
+    if str_[0:4] == 'ODF-':
+        return str_[4:]
+    elif str_ == 'ODF':
+        return ''
+    elif str_[0:3] == 'ODF':
+        return str_[3:]
+    else:
+        return str_
 
 
 def write_details_fun1(ws, series_, int_):
@@ -100,7 +111,8 @@ def write_details_fun1(ws, series_, int_):
         ws.merge_cells(range_string=str_2)
         ws[str_3].alignment = Alignment(horizontal='center', vertical='center')
         for j in range(12):
-            str_4 = series_['子架编号'] + '/' + str(i[j])
+            t = prune(series_['子架编号'])
+            str_4 = t + '/' + str(i[j])
             ws.cell(row=int_ + 1, column=j + 2, value=str_4).font = font
             ws.cell(row=int_ + 1, column=j + 2, value=str_4).alignment = align
         int_ += 3
@@ -112,6 +124,7 @@ if __name__ == '__main__':
     path = os.getcwd()
     df_structure = pd.read_excel(path + r'\structure.xlsx')
     df_structure = df_structure.astype(str)
+    file_name = 'sheets.xlsx'
     room_name = df_structure.columns[-1]
     list_rack = list({}.fromkeys(df_structure['机架编号'].to_list()).keys())
     list_rack_name = [item + '端截面图' for item in list_rack]
