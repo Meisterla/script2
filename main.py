@@ -39,7 +39,7 @@ def draw_border(ws, int_):
 
 def fill_color(ws, int_):
     fill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type="solid")
-    for i in range(2,14):
+    for i in range(2, 14):
         for j in [int_ * 3, int_ * 3 + 1]:
             ws.cell(row=j, column=i, value="").fill = fill
 
