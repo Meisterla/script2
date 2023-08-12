@@ -47,9 +47,9 @@ def fill_color(ws, int_):
 def write_frames(list_, list_2, str_, dict_):
     for i in range(len(list_)):
         wb = load_workbook(path + r'\sheets.xlsx')
-        font = Font(u'宋体', size=11, bold=True, italic=False, strike=False, color='000000')
         ws = wb[str(list_[i])]
-        ws.cell(row=1, column=1, value=str_ + '-' + list_[i]).font = font
+        font = Font(u'宋体', size=11, bold=True, italic=False, strike=False, color='000000')
+        ws.cell(row=1, column=1, value=str_ + '-' + list_2[i]).font = font
         ws.merge_cells(range_string='A1:M1')
         ws['A1'].alignment = Alignment(horizontal='center', vertical='center')
         quantity = dict_[list_2[i]]
@@ -62,13 +62,49 @@ def write_frames(list_, list_2, str_, dict_):
             str_3 = 'A' + str(j * 3)
             str_4 = 'A' + str(j * 3 - 1)
             ws[str_3].alignment = Alignment(horizontal='center', vertical='center')
-            ws[str_4].alignment = Alignment(horizontal='center', vertical='center')
+            ws[str_4].alignment = Alignment(horizontal='left', vertical='center')
             fill_color(ws, j)
         wb.save('sheets.xlsx')
 
 
-def write_details():
-    pass
+def write_details(list_, list_2):
+    for i in range(len(list_)):
+        df_t = df_structure[df_structure['机架编号'] == list_2[i]]
+        df_t['from'] = df_t.apply(lambda x: int(x['端口'].split('-')[0]), axis=1)
+        df_t['to'] = df_t.apply(lambda x: int(x['端口'].split('-')[1]), axis=1)
+        wb = load_workbook(path + r'\sheets.xlsx')
+        ws = wb[str(list_[i])]
+        row_number = 2
+        if len(df_t) == 1:
+            series_ = df_t.iloc[0, :]
+            n = write_details_fun1(ws, series_, row_number)
+            row_number = n
+        else:
+            for j in range(len(df_t)):
+                series_ = df_t.iloc[j, :]
+                n = write_details_fun1(ws, series_, row_number)
+                row_number = n
+        wb.save('sheets.xlsx')
+
+
+def write_details_fun1(ws, series_, int_):
+    font = Font(u'Arial', size=11, bold=False, italic=False, strike=False, color='000000')
+    align = Alignment(horizontal='center', vertical='center')
+    a = [x for x in range(1, series_['to']+1)]
+    list_ = [a[x:x + 12] for x in range(series_['from']-1, series_['to'], 12)]
+    for i in list_:
+        str_ = series_['机架编号'] + '-' + series_['子架编号'] + '/' + str(i[0]) + '-' + str(i[-1]) + '芯'
+        ws.cell(row=int_, column=2, value=str_).font = font
+        str_2 = 'B' + str(int_) + ':' + 'M' + str(int_)
+        str_3 = 'B' + str(int_)
+        ws.merge_cells(range_string=str_2)
+        ws[str_3].alignment = Alignment(horizontal='center', vertical='center')
+        for j in range(12):
+            str_4 = series_['子架编号'] + '/' + str(i[j])
+            ws.cell(row=int_ + 1, column=j + 2, value=str_4).font = font
+            ws.cell(row=int_ + 1, column=j + 2, value=str_4).alignment = align
+        int_ += 3
+    return int_
 
 
 if __name__ == '__main__':
@@ -82,4 +118,4 @@ if __name__ == '__main__':
     dict_areas = calculate_areas(list_rack)
     generate_sheets(list_rack_name)
     write_frames(list_rack_name, list_rack, room_name, dict_areas)
-    write_details()
+    write_details(list_rack_name, list_rack)
