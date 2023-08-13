@@ -14,7 +14,7 @@ def calculate_areas_fun1(str_):
 def calculate_areas(list_):
     dict_rack = {}
     for i in list_:
-        df_t = df_structure[df_structure['机架编号'] == i]
+        df_t = df_seed[df_seed['机架编号'] == i]
         df_t['quantity'] = df_t.apply(lambda x: calculate_areas_fun1(x['端口']), axis=1)
         dict_rack[i] = sum(df_t['quantity']) / 12
     return dict_rack
@@ -69,7 +69,7 @@ def write_frames(list_, list_2, str_, dict_):
 
 def write_details(list_, list_2):
     for i in range(len(list_)):
-        df_t = df_structure[df_structure['机架编号'] == list_2[i]]
+        df_t = df_seed[df_seed['机架编号'] == list_2[i]]
         df_t['from'] = df_t.apply(lambda x: int(x['端口'].split('-')[0]), axis=1)
         df_t['to'] = df_t.apply(lambda x: int(x['端口'].split('-')[1]), axis=1)
         wb = load_workbook(path + '/' + file_name)
@@ -122,11 +122,11 @@ def write_details_fun1(ws, series_, int_):
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
     path = os.getcwd()
-    df_structure = pd.read_excel(path + r'\structure.xlsx')
-    df_structure = df_structure.astype(str)
-    room_name = df_structure.columns[-1]
+    df_seed = pd.read_excel(path + r'\seed.xlsx')
+    df_seed = df_seed.astype(str)
+    room_name = df_seed.columns[-1]
     file_name = room_name + '端口占用表.xlsx'
-    list_rack = list({}.fromkeys(df_structure['机架编号'].to_list()).keys())
+    list_rack = list({}.fromkeys(df_seed['机架编号'].to_list()).keys())
     list_rack_name = [item + '端截面图' for item in list_rack]
     dict_areas = calculate_areas(list_rack)
     generate_sheets(list_rack_name)
