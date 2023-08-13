@@ -20,7 +20,7 @@ def calculate_areas(list_):
     return dict_rack
 
 
-class Growing:
+class Growth:
     def __init__(self, path_file, path_seed):
         self.path_file = path_file
         self.path_seed = path_seed
@@ -126,8 +126,8 @@ class Growing:
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
     path_file = os.getcwd()
-    path_seed = r'\seed.xlsx'
-    gw = Growing(path_file=path_file, path_seed=path_seed)
+    path_seed = r'\seed2.xlsx'
+    gw = Growth(path_file=path_file, path_seed=path_seed)
     df_seed = gw.get_df()
     room_name = df_seed.columns[-1]
     file_name = room_name + '端口占用表.xlsx'
