@@ -6,8 +6,22 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font, Border, Side, Alignment, PatternFill
 
 
+def calculate_areas_fun1(str_):
+    list_t = str_.split('-')
+    return int(list_t[1]) - int(list_t[0]) + 1
+
+
+def calculate_areas(list_):
+    dict_rack = {}
+    for i in list_:
+        df_t = df_seed[df_seed['机架编号'] == i]
+        df_t['quantity'] = df_t.apply(lambda x: calculate_areas_fun1(x['端口']), axis=1)
+        dict_rack[i] = sum(df_t['quantity']) / 12
+    return dict_rack
+
+
 class Growing:
-    def __init__(self, path_file, path_seed=r'\seed.xlsx'):
+    def __init__(self, path_file, path_seed):
         self.path_file = path_file
         self.path_seed = path_seed
 
@@ -15,18 +29,6 @@ class Growing:
         df_seed = pd.read_excel(self.path_file + self.path_seed)
         df_seed = df_seed.astype(str)
         return df_seed
-
-    def calculate_areas(self, list_):
-        dict_rack = {}
-        for i in list_:
-            df_t = df_seed[df_seed['机架编号'] == i]
-            df_t['quantity'] = df_t.apply(lambda x: self.calculate_areas_fun1(x['端口']), axis=1)
-            dict_rack[i] = sum(df_t['quantity']) / 12
-        return dict_rack
-
-    def calculate_areas_fun1(self, str_):
-        list_t = str_.split('-')
-        return int(list_t[1]) - int(list_t[0]) + 1
 
     def generate_sheets(self, list_):
         wb = Workbook()
@@ -131,7 +133,7 @@ if __name__ == '__main__':
     file_name = room_name + '端口占用表.xlsx'
     list_rack = list({}.fromkeys(df_seed['机架编号'].to_list()).keys())
     list_rack_name = [item + '端截面图' for item in list_rack]
-    dict_areas = gw.calculate_areas(list_rack)
+    dict_areas = calculate_areas(list_rack)
     gw.generate_sheets(list_rack_name)
     gw.write_frames(list_rack_name, list_rack, room_name, dict_areas)
     gw.write_details(list_rack_name, list_rack)
