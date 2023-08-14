@@ -126,7 +126,7 @@ class Growth:
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
     path_file = os.getcwd()
-    path_seed = r'\seed2.xlsx'
+    path_seed = r'\seed.xlsx'
     gw = Growth(path_file=path_file, path_seed=path_seed)
     df_seed = gw.get_df()
     room_name = df_seed.columns[-1]
