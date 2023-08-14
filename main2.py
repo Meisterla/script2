@@ -10,14 +10,14 @@ class Growth:
     def __init__(self, path_file, path_seed):
         self.path_file = path_file
         self.path_seed = path_seed
-        self.df_seed = self.get_df(self.path_file, self.path_seed)
+        self.df_seed = self.get_df()
         self.room_name = self.df_seed.columns[-1]
         self.file_name = self.room_name + '端口占用表.xlsx'
         self.list_rack = list({}.fromkeys(self.df_seed['机架编号'].to_list()).keys())
         self.list_rack_name = [item + '端截面图' for item in self.list_rack]
         self.dict_areas = self.calculate_areas()
 
-    def get_df(self, path_file, path_seed):
+    def get_df(self):
         df = pd.read_excel(self.path_file + self.path_seed)
         df = df.astype(str)
         return df
