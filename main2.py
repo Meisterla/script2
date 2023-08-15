@@ -6,37 +6,42 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font, Border, Side, Alignment, PatternFill
 
 
-def calculate_areas_fun1(str_):
-    list_t = str_.split('-')
-    return int(list_t[1]) - int(list_t[0]) + 1
-
-
-def calculate_areas(list_):
-    dict_rack = {}
-    for i in list_:
-        df_t = df_seed[df_seed['机架编号'] == i]
-        df_t['quantity'] = df_t.apply(lambda x: calculate_areas_fun1(x['端口']), axis=1)
-        dict_rack[i] = sum(df_t['quantity']) / 12
-    return dict_rack
-
-
 class Growth:
     def __init__(self, path_file, path_seed):
         self.path_file = path_file
         self.path_seed = path_seed
+        self.df_seed = self.get_df()
+        self.room_name = self.df_seed.columns[-1]
+        self.file_name = self.room_name + '端口占用表.xlsx'
+        self.list_rack = list({}.fromkeys(self.df_seed['机架编号'].to_list()).keys())
+        self.list_rack_name = [item + '端截面图' for item in self.list_rack]
+        self.dict_areas = self.calculate_areas()
 
     def get_df(self):
-        df_seed = pd.read_excel(self.path_file + self.path_seed)
-        df_seed = df_seed.astype(str)
-        return df_seed
+        df = pd.read_excel(self.path_file + self.path_seed)
+        df = df.astype(str)
+        return df
 
-    def generate_sheets(self, list_):
+    def calculate_areas(self):
+        dict_rack = {}
+        for i in self.list_rack:
+            df_t = self.df_seed[self.df_seed['机架编号'] == i]
+            df_t['quantity'] = df_t.apply(lambda x: self.calculate_areas_fun1(x['端口']), axis=1)
+            dict_rack[i] = sum(df_t['quantity']) / 12
+        return dict_rack
+
+    def calculate_areas_fun1(self, str_):
+        list_t = str_.split('-')
+        return int(list_t[1]) - int(list_t[0]) + 1
+
+    def generate_sheets(self):
+        list_ = self.list_rack_name
         wb = Workbook()
         ws = wb.active
         ws.title = str(list_[0])
         for i in list_[1:]:
             wb.create_sheet(str(i))
-        wb.save(file_name)
+        wb.save(self.file_name)
 
     def draw_border(self, ws, int_):
         str_ = 'A1:M' + str(int_)
@@ -51,9 +56,13 @@ class Growth:
             for j in [int_ * 3, int_ * 3 + 1]:
                 ws.cell(row=j, column=i, value="").fill = fill
 
-    def write_frames(self, list_, list_2, str_, dict_):
+    def write_frames(self):
+        list_ = self.list_rack_name
+        list_2 = self.list_rack
+        str_ = self.file_name
+        dict_ = self.dict_areas
         for i in range(len(list_)):
-            wb = load_workbook(path_file + '/' + file_name)
+            wb = load_workbook(path_file + '/' + self.file_name)
             ws = wb[str(list_[i])]
             font = Font(u'宋体', size=11, bold=True, italic=False, strike=False, color='000000')
             ws.cell(row=1, column=1, value=str_ + '-' + list_2[i]).font = font
@@ -71,14 +80,16 @@ class Growth:
                 ws[str_3].alignment = Alignment(horizontal='center', vertical='center')
                 ws[str_4].alignment = Alignment(horizontal='left', vertical='center')
                 self.fill_color(ws, j)
-            wb.save(file_name)
+            wb.save(self.file_name)
 
-    def write_details(self, list_, list_2):
+    def write_details(self):
+        list_ = self.list_rack_name
+        list_2 = self.list_rack
         for i in range(len(list_)):
-            df_t = df_seed[df_seed['机架编号'] == list_2[i]]
+            df_t = self.df_seed[self.df_seed['机架编号'] == list_2[i]]
             df_t['from'] = df_t.apply(lambda x: int(x['端口'].split('-')[0]), axis=1)
             df_t['to'] = df_t.apply(lambda x: int(x['端口'].split('-')[1]), axis=1)
-            wb = load_workbook(path_file + '/' + file_name)
+            wb = load_workbook(path_file + '/' + self.file_name)
             ws = wb[str(list_[i])]
             row_number = 2
             if len(df_t) == 1:
@@ -90,7 +101,7 @@ class Growth:
                     series_ = df_t.iloc[j, :]
                     n = self.write_details_fun1(ws, series_, row_number)
                     row_number = n
-            wb.save(file_name)
+            wb.save(self.file_name)
 
     def prune(self, str_):
         if str_[0:4] == 'ODF-':
@@ -128,12 +139,6 @@ if __name__ == '__main__':
     path_file = os.getcwd()
     path_seed = r'\seed.xlsx'
     gw = Growth(path_file=path_file, path_seed=path_seed)
-    df_seed = gw.get_df()
-    room_name = df_seed.columns[-1]
-    file_name = room_name + '端口占用表.xlsx'
-    list_rack = list({}.fromkeys(df_seed['机架编号'].to_list()).keys())
-    list_rack_name = [item + '端截面图' for item in list_rack]
-    dict_areas = calculate_areas(list_rack)
-    gw.generate_sheets(list_rack_name)
-    gw.write_frames(list_rack_name, list_rack, room_name, dict_areas)
-    gw.write_details(list_rack_name, list_rack)
+    gw.generate_sheets()
+    gw.write_frames()
+    gw.write_details()
