@@ -59,7 +59,8 @@ class Growth:
     def write_frames(self):
         list_ = self.list_rack_name
         list_2 = self.list_rack
-        str_ = self.file_name
+        str_ = self.room_name
+        file_name = self.file_name
         dict_ = self.dict_areas
         for i in range(len(list_)):
             wb = load_workbook(path_file + '/' + self.file_name)
@@ -80,7 +81,7 @@ class Growth:
                 ws[str_3].alignment = Alignment(horizontal='center', vertical='center')
                 ws[str_4].alignment = Alignment(horizontal='left', vertical='center')
                 self.fill_color(ws, j)
-            wb.save(self.file_name)
+            wb.save(file_name)
 
     def write_details(self):
         list_ = self.list_rack_name
@@ -128,8 +129,11 @@ class Growth:
             for j in range(12):
                 t = self.prune(series_['子架编号'])
                 str_4 = t + '/' + str(i[j])
+                str_5 = '未占用'
                 ws.cell(row=int_ + 1, column=j + 2, value=str_4).font = font
                 ws.cell(row=int_ + 1, column=j + 2, value=str_4).alignment = align
+                ws.cell(row=int_ + 2, column=j + 2, value=str_5).font = font
+                ws.cell(row=int_ + 2, column=j + 2, value=str_5).alignment = align
             int_ += 3
         return int_
 
